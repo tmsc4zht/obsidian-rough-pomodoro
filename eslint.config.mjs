@@ -1,29 +1,21 @@
-import eslint from "@eslint/js";
+import { defineConfig, globalIgnores } from "eslint/config";
 import prettier from "eslint-config-prettier";
-import globals from "globals";
-import tseslint from "typescript-eslint";
+import obsidianmd from "eslint-plugin-obsidianmd";
 
-export default tseslint.config(
+export default defineConfig([
+  globalIgnores(["node_modules", "main.js"]),
+  ...obsidianmd.configs.recommended,
   {
-    ignores: ["main.js", "node_modules/"],
-  },
-  eslint.configs.recommended,
-  ...tseslint.configs.recommended,
-  prettier,
-  {
-    files: ["main.ts"],
     languageOptions: {
-      globals: {
-        ...globals.browser,
-        ...globals.node,
+      parserOptions: {
+        projectService: {
+          allowDefaultProject: ["eslint.config.mjs"],
+        },
       },
     },
     rules: {
-      "@typescript-eslint/no-explicit-any": "warn",
-      "@typescript-eslint/no-unused-vars": [
-        "warn",
-        { argsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" },
-      ],
+      "obsidianmd/no-static-styles-assignment": "warn",
     },
   },
-);
+  prettier,
+]);
