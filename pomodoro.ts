@@ -244,28 +244,6 @@ export const createBreakLog = (
   return createLog(state, session.id, session.startedAt, row);
 };
 
-export const createInterruptLog = (
-  state: PomodoroState,
-  start: number,
-  end: number,
-  note: string,
-  sessionId: string,
-): PomodoroLog => {
-  const total = Math.floor((end - start) / 1000);
-  const row = [
-    `- ⚡ Interrupt [Note:: ${clean(note)}]`,
-    `[Start:: ${dateTimeOf(start)}]`,
-    `[End:: ${dateTimeOf(end)}]`,
-    `[Total:: ${total}]`,
-    `[Type:: interrupt]`,
-    `[Session:: ${sessionId}]`,
-    `[StartedBy:: manual]`,
-    `[EndedBy:: manual]`,
-    `[Offset:: ${-new Date(start).getTimezoneOffset()}]`,
-  ].join(" ");
-  return createLog(state, sessionId, start, row);
-};
-
 export const startWorkSession = (
   state: PomodoroState,
   task: string,
@@ -350,16 +328,6 @@ export const completeWorkSession = (
     state.completedWork = null;
   }
   return true;
-};
-
-export const createManualInterruptLog = (
-  state: PomodoroState,
-  note: string,
-  now: number,
-  sessionId: string,
-): PomodoroLog => {
-  const start = now - 15 * 60000;
-  return createInterruptLog(state, start, now, note, sessionId);
 };
 
 export const advanceSession = (

@@ -26,13 +26,15 @@ var import_obsidian3 = require("obsidian");
 
 // components.ts
 var import_obsidian = require("obsidian");
+
+// timer.ts
 var pad = (value) => String(value).padStart(2, "0");
 var timeOf = (timestamp) => {
   const date = new Date(timestamp);
   return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
 };
-var clock = (ms) => {
-  const seconds = Math.max(0, Math.floor(ms / 1e3));
+var clock = (milliseconds) => {
+  const seconds = Math.max(0, Math.floor(milliseconds / 1e3));
   return `${pad(Math.floor(seconds / 60))}:${pad(seconds % 60)}`;
 };
 var timerDisplay = (state, duration, end, overtime = false) => ({
@@ -40,6 +42,8 @@ var timerDisplay = (state, duration, end, overtime = false) => ({
   timer: `${overtime ? "+" : ""}${clock(duration)}`,
   end
 });
+
+// components.ts
 var createField = (parent, label, type, value) => {
   const labelElement = parent.createEl("label", { text: label });
   const input = labelElement.createEl("input");
@@ -98,9 +102,11 @@ var createSettings = (card, options) => {
       input.value = String(value ?? options.settings[key]);
     };
   }
-  return { focus, rest, volume, folder };
+  const preview = settings.createEl("button", { text: options.t("preview") });
+  preview.onclick = options.onPreview;
+  return { focus, rest, volume, folder, preview };
 };
-var createActions = (card, options, openInterruptDialog) => {
+var createActions = (card, options) => {
   const actions = card.createDiv({ cls: "rough-pomodoro-actions" });
   const button = (text, onClick) => {
     const element = actions.createEl("button", { text });
@@ -110,42 +116,7 @@ var createActions = (card, options, openInterruptDialog) => {
   return {
     start: button(options.t("start"), options.onStart),
     finish: button(options.t("finish"), options.onEnd),
-    manual: button(options.t("manualBreak"), options.onManualBreak),
-    interrupt: button(options.t("interruptRecord"), openInterruptDialog),
-    preview: button(options.t("preview"), options.onPreview)
-  };
-};
-var createInterruptDialog = (root, options) => {
-  const dialog = root.createDiv({ cls: "rough-pomodoro-dialog" });
-  dialog.hidden = true;
-  const card = dialog.createDiv();
-  card.createEl("b", { text: options.t("interruptPrompt") });
-  const reason = card.createEl("textarea");
-  reason.placeholder = options.t("interruptPlaceholder");
-  const error = card.createDiv({ cls: "rough-pomodoro-error" });
-  const save = card.createEl("button", { text: options.t("saveInterrupt") });
-  const cancel = card.createEl("button", { text: options.t("cancel") });
-  save.onclick = () => {
-    if (!reason.value.trim()) {
-      error.textContent = options.t("interruptRequired");
-      reason.focus();
-      return;
-    }
-    options.onInterrupt(reason.value);
-    dialog.hidden = true;
-    reason.value = "";
-    error.textContent = "";
-  };
-  cancel.onclick = () => {
-    dialog.hidden = true;
-    reason.value = "";
-    error.textContent = "";
-  };
-  return () => {
-    reason.value = "";
-    error.textContent = "";
-    dialog.hidden = false;
-    reason.focus();
+    manual: button(options.t("manualBreak"), options.onManualBreak)
   };
 };
 var createEndDialog = (root, options) => {
@@ -173,13 +144,12 @@ var createEndDialog = (root, options) => {
 var createPomodoroPanel = (document, options) => {
   const root = document.body.createDiv({ cls: "rough-pomodoro-overlay" });
   const card = root.createDiv({ cls: "rough-pomodoro-card" });
-  const openInterruptDialog = createInterruptDialog(root, options);
   return {
     root,
     task: createHeaderAndTask(card, root, options),
     ...createHero(card),
     ...createSettings(card, options),
-    ...createActions(card, options, openInterruptDialog),
+    ...createActions(card, options),
     error: card.createDiv({ cls: "rough-pomodoro-error" }),
     ...createEndDialog(root, options)
   };
@@ -200,8 +170,6 @@ var en_US_default = {
   folderConflict: "The log path conflicts with a file: {path}",
   invalidLogFolder: "Log folder must stay inside the vault; '..' is not allowed.",
   logSave: "Could not save the work log. Try again: {error}",
-  interruptPrompt: "Interrupt description (required)",
-  saveInterrupt: "Log interrupt",
   taskRequired: "Enter what you are going to work on.",
   audioStart: "Could not enable audio. The timer will start anyway: {error}",
   interruptRequired: "Enter an interrupt description.",
@@ -214,7 +182,6 @@ var en_US_default = {
   start: "\u25B6\uFE0F Start",
   finish: "\u23F9\uFE0F End",
   manualBreak: "\u{1F33F} Start break",
-  interruptRecord: "\u26A1 Log interrupt",
   preview: "\u{1F50A} Preview sound",
   endTitle: "Session result",
   completed: "\u2705 Completed",
@@ -253,8 +220,6 @@ var ja_JP_default = {
   folderConflict: "\u4FDD\u5B58\u5148\u304C\u30D5\u30A1\u30A4\u30EB\u3068\u885D\u7A81\u3057\u3066\u3044\u307E\u3059: {path}",
   invalidLogFolder: "\u30ED\u30B0\u4FDD\u5B58\u5148\u306B\u306FVault\u5185\u306E\u76F8\u5BFE\u30D1\u30B9\u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u300C..\u300D\u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u3002",
   logSave: "\u4F5C\u696D\u30ED\u30B0\u3092\u4FDD\u5B58\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002\u518D\u8A66\u884C\u3057\u3066\u304F\u3060\u3055\u3044: {error}",
-  interruptPrompt: "\u30A4\u30F3\u30BF\u30E9\u30D7\u30C8\u5185\u5BB9\uFF08\u5FC5\u9808\uFF09",
-  saveInterrupt: "\u30A4\u30F3\u30BF\u30E9\u30D7\u30C8\u3092\u8A18\u9332",
   taskRequired: "\u4F5C\u696D\u5185\u5BB9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
   audioStart: "\u97F3\u58F0\u3092\u6709\u52B9\u5316\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F\u3002\u30BF\u30A4\u30DE\u30FC\u306F\u958B\u59CB\u3057\u307E\u3059: {error}",
   interruptRequired: "\u30A4\u30F3\u30BF\u30E9\u30D7\u30C8\u5185\u5BB9\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044\u3002",
@@ -267,7 +232,6 @@ var ja_JP_default = {
   start: "\u25B6\uFE0F \u958B\u59CB",
   finish: "\u23F9\uFE0F \u7D42\u4E86",
   manualBreak: "\u{1F33F} \u4F11\u61A9\u958B\u59CB",
-  interruptRecord: "\u26A1 \u30A4\u30F3\u30BF\u30E9\u30D7\u30C8\u8A18\u9332",
   preview: "\u{1F50A} \u97F3\u3092\u8A66\u8074",
   endTitle: "\u7D42\u4E86\u6642\u306E\u7D50\u679C",
   completed: "\u2705 \u5B8C\u4E86",
@@ -418,21 +382,6 @@ var createBreakLog = (state, session, end, endedBy = "stop") => {
   ].join(" ");
   return createLog(state, session.id, session.startedAt, row);
 };
-var createInterruptLog = (state, start, end, note, sessionId) => {
-  const total = Math.floor((end - start) / 1e3);
-  const row = [
-    `- \u26A1 Interrupt [Note:: ${clean(note)}]`,
-    `[Start:: ${dateTimeOf(start)}]`,
-    `[End:: ${dateTimeOf(end)}]`,
-    `[Total:: ${total}]`,
-    `[Type:: interrupt]`,
-    `[Session:: ${sessionId}]`,
-    `[StartedBy:: manual]`,
-    `[EndedBy:: manual]`,
-    `[Offset:: ${-new Date(start).getTimezoneOffset()}]`
-  ].join(" ");
-  return createLog(state, sessionId, start, row);
-};
 var startWorkSession = (state, task, now, sessionId) => {
   const completedBreakLog = state.session?.phase === "breakDone" ? createBreakLog(state, state.session, now, "time-up") : null;
   const duration = Number(state.settings.focusMinutes) * 6e4;
@@ -496,10 +445,6 @@ var completeWorkSession = (state, outcome, note, now, createSessionId) => {
     state.completedWork = null;
   }
   return true;
-};
-var createManualInterruptLog = (state, note, now, sessionId) => {
-  const start = now - 15 * 6e4;
-  return createInterruptLog(state, start, now, note, sessionId);
 };
 var advanceSession = (state, now) => {
   const session = state.session;
@@ -674,14 +619,6 @@ ${log.markdown}`
     }
     this.render();
   }
-  manualInterrupt(note) {
-    if (!note.trim()) return;
-    this.state.pendingLogs.push(
-      createManualInterruptLog(this.state, note, Date.now(), id())
-    );
-    void this.persist();
-    void this.flush();
-  }
   async startWork() {
     if (this.state.session && this.state.session.phase !== "breakDone") return;
     const task = this.state.task.trim();
@@ -775,7 +712,6 @@ ${log.markdown}`
       },
       onEnd: () => this.end(),
       onManualBreak: () => this.startManualBreak(),
-      onInterrupt: (note) => this.manualInterrupt(note),
       onPreview: () => {
         void this.previewSound();
       },

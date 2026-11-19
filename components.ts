@@ -1,5 +1,6 @@
 import "obsidian";
 import type { PomodoroConfig } from "./pomodoro";
+export { clock, timeOf, timerDisplay } from "./timer";
 
 export interface PomodoroPanel {
   root: HTMLElement;
@@ -15,7 +16,6 @@ export interface PomodoroPanel {
   start: HTMLButtonElement;
   finish: HTMLButtonElement;
   manual: HTMLButtonElement;
-  interrupt: HTMLButtonElement;
   preview: HTMLButtonElement;
   error: HTMLElement;
   endDialog: HTMLElement;
@@ -31,33 +31,9 @@ export interface PomodoroPanelOptions {
   onStart: () => void;
   onEnd: () => void;
   onManualBreak: () => void;
-  onInterrupt: (note: string) => void;
   onPreview: () => void;
   onComplete: (outcome: "completed" | "interrupted", note?: string) => void;
 }
-
-const pad = (value: number): string => String(value).padStart(2, "0");
-
-export const timeOf = (timestamp: number): string => {
-  const date = new Date(timestamp);
-  return `${pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
-};
-
-export const clock = (ms: number): string => {
-  const seconds = Math.max(0, Math.floor(ms / 1000));
-  return `${pad(Math.floor(seconds / 60))}:${pad(seconds % 60)}`;
-};
-
-export const timerDisplay = (
-  state: string,
-  duration: number,
-  end: string,
-  overtime = false,
-) => ({
-  state,
-  timer: `${overtime ? "+" : ""}${clock(duration)}`,
-  end,
-});
 
 const createField = (
   parent: HTMLElement,
@@ -101,7 +77,7 @@ const createHero = (
 const createSettings = (
   card: HTMLElement,
   options: PomodoroPanelOptions,
-): Pick<PomodoroPanel, "focus" | "rest" | "volume" | "folder"> => {
+): Pick<PomodoroPanel, "focus" | "rest" | "volume" | "folder" | "preview"> => {
   const settings = card.createEl("details");
   settings.createEl("summary", { text: options.t("timerSettings") });
   const grid = settings.createDiv({ cls: "rough-pomodoro-grid" });
@@ -136,14 +112,15 @@ const createSettings = (
       input.value = String(value ?? options.settings[key]);
     };
   }
-  return { focus, rest, volume, folder };
+  const preview = settings.createEl("button", { text: options.t("preview") });
+  preview.onclick = options.onPreview;
+  return { focus, rest, volume, folder, preview };
 };
 
 const createActions = (
   card: HTMLElement,
   options: PomodoroPanelOptions,
-  openInterruptDialog: () => void,
-): Pick<PomodoroPanel, "start" | "finish" | "manual" | "interrupt" | "preview"> => {
+): Pick<PomodoroPanel, "start" | "finish" | "manual"> => {
   const actions = card.createDiv({ cls: "rough-pomodoro-actions" });
   const button = (text: string, onClick: () => void): HTMLButtonElement => {
     const element = actions.createEl("button", { text });
@@ -154,45 +131,6 @@ const createActions = (
     start: button(options.t("start"), options.onStart),
     finish: button(options.t("finish"), options.onEnd),
     manual: button(options.t("manualBreak"), options.onManualBreak),
-    interrupt: button(options.t("interruptRecord"), openInterruptDialog),
-    preview: button(options.t("preview"), options.onPreview),
-  };
-};
-
-const createInterruptDialog = (
-  root: HTMLElement,
-  options: PomodoroPanelOptions,
-): (() => void) => {
-  const dialog = root.createDiv({ cls: "rough-pomodoro-dialog" });
-  dialog.hidden = true;
-  const card = dialog.createDiv();
-  card.createEl("b", { text: options.t("interruptPrompt") });
-  const reason = card.createEl("textarea");
-  reason.placeholder = options.t("interruptPlaceholder");
-  const error = card.createDiv({ cls: "rough-pomodoro-error" });
-  const save = card.createEl("button", { text: options.t("saveInterrupt") });
-  const cancel = card.createEl("button", { text: options.t("cancel") });
-  save.onclick = () => {
-    if (!reason.value.trim()) {
-      error.textContent = options.t("interruptRequired");
-      reason.focus();
-      return;
-    }
-    options.onInterrupt(reason.value);
-    dialog.hidden = true;
-    reason.value = "";
-    error.textContent = "";
-  };
-  cancel.onclick = () => {
-    dialog.hidden = true;
-    reason.value = "";
-    error.textContent = "";
-  };
-  return () => {
-    reason.value = "";
-    error.textContent = "";
-    dialog.hidden = false;
-    reason.focus();
   };
 };
 
@@ -231,13 +169,12 @@ export const createPomodoroPanel = (
 ): PomodoroPanel => {
   const root = document.body.createDiv({ cls: "rough-pomodoro-overlay" });
   const card = root.createDiv({ cls: "rough-pomodoro-card" });
-  const openInterruptDialog = createInterruptDialog(root, options);
   return {
     root,
     task: createHeaderAndTask(card, root, options),
     ...createHero(card),
     ...createSettings(card, options),
-    ...createActions(card, options, openInterruptDialog),
+    ...createActions(card, options),
     error: card.createDiv({ cls: "rough-pomodoro-error" }),
     ...createEndDialog(root, options),
   };

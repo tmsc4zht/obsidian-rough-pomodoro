@@ -8,17 +8,12 @@ import {
   TFolder,
   type SettingDefinitionItem,
 } from "obsidian";
-import {
-  createPomodoroPanel,
-  type PomodoroPanel,
-  timeOf,
-  timerDisplay,
-} from "./components";
+import { createPomodoroPanel, type PomodoroPanel } from "./components";
 import { detectLocale, loadMessages, type Locale, type Messages } from "./i18n";
+import { timeOf, timerDisplay } from "./timer";
 import {
   advanceSession,
   completeWorkSession,
-  createManualInterruptLog,
   endBreakSession,
   isSafeLogPath,
   normalizeLogFolder,
@@ -208,14 +203,6 @@ export default class Pomodoro extends Plugin {
     }
     this.render();
   }
-  manualInterrupt(note: string): void {
-    if (!note.trim()) return;
-    this.state.pendingLogs.push(
-      createManualInterruptLog(this.state, note, Date.now(), id()),
-    );
-    void this.persist();
-    void this.flush();
-  }
   async startWork(): Promise<void> {
     if (this.state.session && this.state.session.phase !== "breakDone") return;
     const task = this.state.task.trim();
@@ -313,7 +300,6 @@ export default class Pomodoro extends Plugin {
       },
       onEnd: () => this.end(),
       onManualBreak: () => this.startManualBreak(),
-      onInterrupt: (note) => this.manualInterrupt(note),
       onPreview: () => {
         void this.previewSound();
       },
