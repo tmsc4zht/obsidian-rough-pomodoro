@@ -99,7 +99,7 @@ export const normalizeFileNameFormat = (format: string): string | null => {
     !trimmed ||
     trimmed.includes("/") ||
     trimmed.includes("\\") ||
-    /[\u0000-\u001f]/.test(trimmed) ||
+    [...trimmed].some((character) => character.charCodeAt(0) < 0x20) ||
     formatLogFileName(Date.now(), trimmed).trim() === ""
   ) {
     return null;

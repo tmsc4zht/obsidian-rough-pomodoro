@@ -327,7 +327,7 @@ var formatLogFileName = (timestamp, format) => {
 };
 var normalizeFileNameFormat = (format) => {
   const trimmed = format.trim();
-  if (!trimmed || trimmed.includes("/") || trimmed.includes("\\") || /[\u0000-\u001f]/.test(trimmed) || formatLogFileName(Date.now(), trimmed).trim() === "") {
+  if (!trimmed || trimmed.includes("/") || trimmed.includes("\\") || [...trimmed].some((character) => character.charCodeAt(0) < 32) || formatLogFileName(Date.now(), trimmed).trim() === "") {
     return null;
   }
   return trimmed;
