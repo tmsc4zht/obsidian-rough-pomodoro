@@ -141,13 +141,17 @@ const createEndDialog = (
   const endDialog = root.createDiv({ cls: "rough-pomodoro-dialog" });
   endDialog.hidden = true;
   const endCard = endDialog.createDiv();
+  endCard.addClass("rough-pomodoro-dialog-card");
+  const close = endCard.createEl("button", { text: "×" });
+  close.addClass("rough-pomodoro-dialog-close");
+  close.setAttribute("aria-label", options.t("close"));
   endCard.createEl("b", { text: options.t("endTitle") });
   const done = endCard.createEl("button", { text: options.t("completed") }),
     interrupted = endCard.createEl("button", { text: options.t("interrupted") }),
     reason = endCard.createEl("textarea");
   reason.placeholder = options.t("interruptPlaceholder");
-  const save = endCard.createEl("button", { text: options.t("recordAndEnd") }),
-    cancel = endCard.createEl("button", { text: options.t("cancel") });
+  const save = endCard.createEl("button", { text: options.t("recordAndEnd") });
+  close.onclick = () => (endDialog.hidden = true);
   done.onclick = () => options.onComplete("completed");
   interrupted.onclick = () => {
     reason.hidden = false;
@@ -156,7 +160,6 @@ const createEndDialog = (
   reason.hidden = true;
   save.hidden = true;
   save.onclick = () => options.onComplete("interrupted", reason.value);
-  cancel.onclick = () => (endDialog.hidden = true);
   return {
     endDialog,
     endError: endCard.createDiv(),

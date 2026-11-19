@@ -32,6 +32,7 @@
   "interruptPlaceholder": "Interrupt description (required)",
   "recordAndEnd": "Log and end",
   "cancel": "Cancel",
+  "close": "Close",
   "pureBreak": "Taking a break",
   "currentTask": "Current task: {task}",
   "completedTask": "Focus complete: {task}",

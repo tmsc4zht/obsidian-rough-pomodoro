@@ -123,10 +123,15 @@ var createEndDialog = (root, options) => {
   const endDialog = root.createDiv({ cls: "rough-pomodoro-dialog" });
   endDialog.hidden = true;
   const endCard = endDialog.createDiv();
+  endCard.addClass("rough-pomodoro-dialog-card");
+  const close = endCard.createEl("button", { text: "\xD7" });
+  close.addClass("rough-pomodoro-dialog-close");
+  close.setAttribute("aria-label", options.t("close"));
   endCard.createEl("b", { text: options.t("endTitle") });
   const done = endCard.createEl("button", { text: options.t("completed") }), interrupted = endCard.createEl("button", { text: options.t("interrupted") }), reason = endCard.createEl("textarea");
   reason.placeholder = options.t("interruptPlaceholder");
-  const save = endCard.createEl("button", { text: options.t("recordAndEnd") }), cancel = endCard.createEl("button", { text: options.t("cancel") });
+  const save = endCard.createEl("button", { text: options.t("recordAndEnd") });
+  close.onclick = () => endDialog.hidden = true;
   done.onclick = () => options.onComplete("completed");
   interrupted.onclick = () => {
     reason.hidden = false;
@@ -135,7 +140,6 @@ var createEndDialog = (root, options) => {
   reason.hidden = true;
   save.hidden = true;
   save.onclick = () => options.onComplete("interrupted", reason.value);
-  cancel.onclick = () => endDialog.hidden = true;
   return {
     endDialog,
     endError: endCard.createDiv()
@@ -193,6 +197,7 @@ var en_US_default = {
   interruptPlaceholder: "Interrupt description (required)",
   recordAndEnd: "Log and end",
   cancel: "Cancel",
+  close: "Close",
   pureBreak: "Taking a break",
   currentTask: "Current task: {task}",
   completedTask: "Focus complete: {task}",
@@ -247,6 +252,7 @@ var ja_JP_default = {
   interruptPlaceholder: "\u30A4\u30F3\u30BF\u30E9\u30D7\u30C8\u5185\u5BB9\uFF08\u5FC5\u9808\uFF09",
   recordAndEnd: "\u8A18\u9332\u3057\u3066\u7D42\u4E86",
   cancel: "\u30AD\u30E3\u30F3\u30BB\u30EB",
+  close: "\u9589\u3058\u308B",
   pureBreak: "\u7D14\u7C8B\u306A\u4F11\u61A9\u4E2D",
   currentTask: "\u4ECA\u3084\u308B\u3053\u3068: {task}",
   completedTask: "\u96C6\u4E2D\u7D42\u4E86: {task}",
