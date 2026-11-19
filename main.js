@@ -84,17 +84,10 @@ var createSettings = (card, options) => {
     "number",
     options.settings.breakMinutes
   ), volume = createField(grid, options.t("volume"), "range", options.settings.volume);
-  const folder = createField(
-    settings,
-    options.t("logFolder"),
-    "text",
-    options.settings.logFolder
-  );
   const settingInputs = [
     [focus, "focusMinutes"],
     [rest, "breakMinutes"],
-    [volume, "volume"],
-    [folder, "logFolder"]
+    [volume, "volume"]
   ];
   for (const [input, key] of settingInputs) {
     input.onchange = () => {
@@ -104,7 +97,7 @@ var createSettings = (card, options) => {
   }
   const preview = settings.createEl("button", { text: options.t("preview") });
   preview.onclick = options.onPreview;
-  return { focus, rest, volume, folder, preview };
+  return { focus, rest, volume, preview };
 };
 var createActions = (card, options) => {
   const actions = card.createDiv({ cls: "rough-pomodoro-actions" });
@@ -187,6 +180,7 @@ var en_US_default = {
   breakMinutes: "Break time (minutes)",
   volume: "Volume",
   logFolder: "Log folder",
+  logFolderDescription: "Folder inside the vault where daily work logs are saved.",
   start: "\u25B6\uFE0F Start",
   finish: "\u23F9\uFE0F End",
   manualBreak: "\u{1F33F} Start break",
@@ -242,6 +236,7 @@ var ja_JP_default = {
   breakMinutes: "\u4F11\u61A9\u6642\u9593\uFF08\u5206\uFF09",
   volume: "\u97F3\u91CF",
   logFolder: "\u30ED\u30B0\u4FDD\u5B58\u5148\u30D5\u30A9\u30EB\u30C0",
+  logFolderDescription: "\u65E5\u3005\u306E\u4F5C\u696D\u30ED\u30B0\u3092\u4FDD\u5B58\u3059\u308BVault\u5185\u306E\u30D5\u30A9\u30EB\u30C0\u3067\u3059\u3002",
   start: "\u25B6\uFE0F \u958B\u59CB",
   finish: "\u23F9\uFE0F \u7D42\u4E86",
   manualBreak: "\u{1F33F} \u4F11\u61A9\u958B\u59CB",
@@ -841,6 +836,12 @@ var PomodoroSettings = class extends import_obsidian3.PluginSettingTab {
     );
     new import_obsidian3.Setting(this.containerEl).setName(this.pomodoro.t("displayStatusBar")).setDesc(this.pomodoro.t("displayStatusBarDescription")).addToggle(
       (toggle) => toggle.setValue(this.pomodoro.state.settings.showStatusBar).onChange((value) => this.pomodoro.setDisplaySetting("showStatusBar", value))
+    );
+    new import_obsidian3.Setting(this.containerEl).setName(this.pomodoro.t("logFolder")).setDesc(this.pomodoro.t("logFolderDescription")).addText(
+      (text) => text.setValue(this.pomodoro.state.settings.logFolder).onChange((value) => {
+        const saved = this.pomodoro.updateSetting("logFolder", value);
+        text.setValue(String(saved ?? this.pomodoro.state.settings.logFolder));
+      })
     );
   }
 };

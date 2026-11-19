@@ -22,6 +22,7 @@
   "breakMinutes": "休憩時間（分）",
   "volume": "音量",
   "logFolder": "ログ保存先フォルダ",
+  "logFolderDescription": "日々の作業ログを保存するVault内のフォルダです。",
   "start": "▶️ 開始",
   "finish": "⏹️ 終了",
   "manualBreak": "🌿 休憩開始",

@@ -460,5 +460,14 @@ class PomodoroSettings extends PluginSettingTab {
           .setValue(this.pomodoro.state.settings.showStatusBar)
           .onChange((value) => this.pomodoro.setDisplaySetting("showStatusBar", value)),
       );
+    new Setting(this.containerEl)
+      .setName(this.pomodoro.t("logFolder"))
+      .setDesc(this.pomodoro.t("logFolderDescription"))
+      .addText((text) =>
+        text.setValue(this.pomodoro.state.settings.logFolder).onChange((value) => {
+          const saved = this.pomodoro.updateSetting("logFolder", value);
+          text.setValue(String(saved ?? this.pomodoro.state.settings.logFolder));
+        }),
+      );
   }
 }

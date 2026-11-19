@@ -22,6 +22,7 @@
   "breakMinutes": "Break time (minutes)",
   "volume": "Volume",
   "logFolder": "Log folder",
+  "logFolderDescription": "Folder inside the vault where daily work logs are saved.",
   "start": "▶️ Start",
   "finish": "⏹️ End",
   "manualBreak": "🌿 Start break",

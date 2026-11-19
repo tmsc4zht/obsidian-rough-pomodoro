@@ -12,7 +12,6 @@ export interface PomodoroPanel {
   focus: HTMLInputElement;
   rest: HTMLInputElement;
   volume: HTMLInputElement;
-  folder: HTMLInputElement;
   start: HTMLButtonElement;
   finish: HTMLButtonElement;
   manual: HTMLButtonElement;
@@ -77,7 +76,7 @@ const createHero = (
 const createSettings = (
   card: HTMLElement,
   options: PomodoroPanelOptions,
-): Pick<PomodoroPanel, "focus" | "rest" | "volume" | "folder" | "preview"> => {
+): Pick<PomodoroPanel, "focus" | "rest" | "volume" | "preview"> => {
   const settings = card.createEl("details");
   settings.createEl("summary", { text: options.t("timerSettings") });
   const grid = settings.createDiv({ cls: "rough-pomodoro-grid" });
@@ -94,17 +93,10 @@ const createSettings = (
       options.settings.breakMinutes,
     ),
     volume = createField(grid, options.t("volume"), "range", options.settings.volume);
-  const folder = createField(
-    settings,
-    options.t("logFolder"),
-    "text",
-    options.settings.logFolder,
-  );
   const settingInputs = [
     [focus, "focusMinutes"],
     [rest, "breakMinutes"],
     [volume, "volume"],
-    [folder, "logFolder"],
   ] as Array<[HTMLInputElement, keyof PomodoroConfig]>;
   for (const [input, key] of settingInputs) {
     input.onchange = () => {
@@ -114,7 +106,7 @@ const createSettings = (
   }
   const preview = settings.createEl("button", { text: options.t("preview") });
   preview.onclick = options.onPreview;
-  return { focus, rest, volume, folder, preview };
+  return { focus, rest, volume, preview };
 };
 
 const createActions = (
