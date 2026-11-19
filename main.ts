@@ -111,15 +111,17 @@ export default class Pomodoro extends Plugin {
     const session = this.state.session;
     let value = "--:--";
     if (session?.type === "work") {
-      value = session.phase === "focus"
-        ? clock(session.plannedEndsAt - Date.now())
-        : `+${clock(Date.now() - session.plannedEndsAt)}`;
+      value =
+        session.phase === "focus"
+          ? clock(session.plannedEndsAt - Date.now())
+          : `+${clock(Date.now() - session.plannedEndsAt)}`;
     } else if (session?.type === "break") {
-      value = session.mode === "manual"
-        ? `+${clock(Date.now() - session.startedAt)}`
-        : session.phase === "break"
-          ? clock((session.endsAt ?? Date.now()) - Date.now())
-          : `+${clock(Date.now() - (session.endsAt ?? Date.now()))}`;
+      value =
+        session.mode === "manual"
+          ? `+${clock(Date.now() - session.startedAt)}`
+          : session.phase === "break"
+            ? clock((session.endsAt ?? Date.now()) - Date.now())
+            : `+${clock(Date.now() - (session.endsAt ?? Date.now()))}`;
     }
     this.statusBar.textContent = `🍅 ${value}`;
   }

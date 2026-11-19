@@ -160,13 +160,15 @@ export const normalizePomodoroState = (saved: unknown): PomodoroState => {
           ? settings.showRibbon
           : settings.displayLocation === undefined
             ? DEFAULTS.settings.showRibbon
-            : settings.displayLocation === "ribbon" || settings.displayLocation === "both",
+            : settings.displayLocation === "ribbon" ||
+              settings.displayLocation === "both",
       showStatusBar:
         typeof settings.showStatusBar === "boolean"
           ? settings.showStatusBar
           : settings.displayLocation === undefined
             ? DEFAULTS.settings.showStatusBar
-            : settings.displayLocation === "statusBar" || settings.displayLocation === "both",
+            : settings.displayLocation === "statusBar" ||
+              settings.displayLocation === "both",
     },
     task: typeof data.task === "string" ? data.task : "",
     lastTask: typeof data.lastTask === "string" ? data.lastTask : "",
