@@ -22,6 +22,12 @@ The log fields and file names are specific to this plugin. They are not intended
 
 The interface automatically switches between Japanese and English based on Obsidian's language setting.
 
+## Install with BRAT
+
+1. Install **BRAT** from Obsidian's Community plugins.
+2. In BRAT, choose **Add a beta plugin for testing** and enter `https://github.com/tmsc4zht/obsidian-rough-pomodoro`.
+3. Track the latest release or pin a specific release tag, such as `0.1.0-beta.1`.
+
 ## Web version
 
 An installable, offline-capable PWA. Data stays in the browser; notifications require permission and the app to remain open.
@@ -49,6 +55,6 @@ Open the timer from the command palette using **Open Pomodoro** (or its Japanese
 
 The default log folder is `Pomodoro` at the root of your vault. You can change it in the timer settings. The folder must stay inside the vault; leave it blank to save logs at the vault root. `..` path segments are not allowed.
 
-For a release, update the version in `manifest.json` and `versions.json`, commit the changes, and create a tag with the exact same version (without a `v` prefix). GitHub Actions verifies the tag, builds the plugin, and creates a draft Release with the required Obsidian assets.
+For a stable release, update the version in `manifest.json` and `versions.json`, commit the changes, and push a matching semantic-version tag without a `v` prefix. For a beta, push a pre-release tag such as `0.1.0-beta.1` without changing the default-branch manifest. GitHub Actions builds from the tag, creates a release `manifest.json` whose version matches the tag, and publishes the Release; beta tags are marked as pre-releases.
 
 For Japanese documentation, see [README-ja-JP.md](./README-ja-JP.md).

@@ -22,6 +22,12 @@ SORT item.Start DESC
 
 画面表示はObsidianの言語設定に合わせて、日本語と英語を自動で切り替えます。
 
+## BRATでインストール
+
+1. ObsidianのCommunity pluginsから**BRAT**をインストールします。
+2. BRATで**Add a beta plugin for testing**を選び、`https://github.com/tmsc4zht/obsidian-rough-pomodoro`を登録します。
+3. 最新リリースを追跡するか、`0.1.0-beta.1`のような特定のリリースタグに固定します。
+
 ## Web版
 
 インストールしてオフラインでも使えるPWAです。データはブラウザー内に保存され、通知には許可とアプリの起動が必要です。
@@ -49,6 +55,6 @@ npm run build
 
 ログの既定保存先は、Vault直下の`Pomodoro`フォルダです。タイマー設定から変更できます。保存先はVault内の相対パスに限られ、空欄の場合はVault直下に保存します。`..`は使用できません。
 
-リリース時は、`manifest.json`と`versions.json`のバージョンを更新し、`v`を付けずに同じバージョンのタグを作成します。GitHub Actionsがタグとmanifestの一致を検証し、ビルド後にObsidianの必要アセットを添付したDraft Releaseを作成します。
+安定版をリリースするときは、`manifest.json`と`versions.json`のバージョンを更新してコミットし、`v`を付けずに同じSemantic Versioningタグをpushします。ベータ版では既定ブランチのmanifestを変更せず、`0.1.0-beta.1`のようなプレリリースタグをpushします。GitHub ActionsがタグからRelease用の`manifest.json`を生成し、タグと一致するバージョンでReleaseを公開します。ベータ版ReleaseはPre-releaseとして作成されます。
 
 英語のドキュメントは[README.md](./README.md)を参照してください。
