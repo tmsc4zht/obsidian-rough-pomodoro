@@ -6,11 +6,10 @@ import {
   Setting,
   TFile,
   TFolder,
-  type SettingDefinitionItem,
 } from "obsidian";
 import { createPomodoroPanel, type PomodoroPanel } from "./components";
 import { detectLocale, loadMessages, type Locale, type Messages } from "./i18n";
-import { timeOf, timerDisplay } from "./timer";
+import { clock, timeOf, timerDisplay } from "./timer";
 import {
   advanceSession,
   completeWorkSession,
@@ -57,6 +56,8 @@ export default class Pomodoro extends Plugin {
   audio: AudioContext | null = null;
   locale: Locale = detectLocale();
   messages: Messages = {};
+  ribbon: HTMLElement | null = null;
+  statusBar: HTMLElement | null = null;
 
   t(key: string, values: Record<string, string | number> = {}): string {
     let message = this.messages[key] || key;
@@ -71,6 +72,7 @@ export default class Pomodoro extends Plugin {
     this.messages = loadMessages(this.locale);
     this.state = normalizePomodoroState(await this.loadData());
     this.registerOpenActions();
+    this.updateDisplayLocation();
     this.startTicker();
     this.tick();
     void this.flush();
@@ -82,8 +84,44 @@ export default class Pomodoro extends Plugin {
       name: this.t("open"),
       callback: () => this.open(),
     });
-    this.addRibbonIcon("clock", this.t("open"), () => this.open());
     this.addSettingTab(new PomodoroSettings(this.app, this));
+  }
+
+  updateDisplayLocation(): void {
+    this.ribbon?.remove();
+    this.statusBar?.remove();
+    this.ribbon = null;
+    this.statusBar = null;
+
+    if (this.state.settings.showRibbon) {
+      this.ribbon = this.addRibbonIcon("clock", this.t("open"), () => this.open());
+      this.ribbon.setAttribute("aria-label", this.t("open"));
+    }
+    if (this.state.settings.showStatusBar) {
+      this.statusBar = this.addStatusBarItem();
+      this.statusBar.addClass("mod-clickable");
+      this.statusBar.setAttribute("aria-label", this.t("open"));
+      this.statusBar.addEventListener("click", () => this.open());
+      this.updateStatusBar();
+    }
+  }
+
+  private updateStatusBar(): void {
+    if (!this.statusBar) return;
+    const session = this.state.session;
+    let value = "--:--";
+    if (session?.type === "work") {
+      value = session.phase === "focus"
+        ? clock(session.plannedEndsAt - Date.now())
+        : `+${clock(Date.now() - session.plannedEndsAt)}`;
+    } else if (session?.type === "break") {
+      value = session.mode === "manual"
+        ? `+${clock(Date.now() - session.startedAt)}`
+        : session.phase === "break"
+          ? clock((session.endsAt ?? Date.now()) - Date.now())
+          : `+${clock(Date.now() - (session.endsAt ?? Date.now()))}`;
+    }
+    this.statusBar.textContent = `🍅 ${value}`;
   }
 
   private startTicker() {
@@ -265,9 +303,10 @@ export default class Pomodoro extends Plugin {
       this.startAlarm();
     }
     this.render();
+    this.updateStatusBar();
   }
-  private updateSetting(
-    key: keyof PomodoroConfig,
+  updateSetting(
+    key: Exclude<keyof PomodoroConfig, "showRibbon" | "showStatusBar">,
     value: string,
   ): string | number | null {
     if (key === "logFolder") {
@@ -284,6 +323,12 @@ export default class Pomodoro extends Plugin {
     return this.state.settings[key];
   }
 
+  setDisplaySetting(key: "showRibbon" | "showStatusBar", value: boolean): void {
+    this.state.settings[key] = value;
+    void this.persist();
+    this.updateDisplayLocation();
+  }
+
   open(): void {
     if (this.panel?.root?.isConnected) return;
     this.panel = createPomodoroPanel(this.app.workspace.containerEl.ownerDocument, {
@@ -294,7 +339,11 @@ export default class Pomodoro extends Plugin {
         this.state.task = task;
         void this.persist();
       },
-      onSettingChange: (key, value) => this.updateSetting(key, value),
+      onSettingChange: (key, value) =>
+        this.updateSetting(
+          key as Exclude<keyof PomodoroConfig, "showRibbon" | "showStatusBar">,
+          value,
+        ),
       onStart: () => {
         void this.startWork();
       },
@@ -391,20 +440,23 @@ class PomodoroSettings extends PluginSettingTab {
     super(app, pomodoro);
   }
 
-  getSettingDefinitions(): SettingDefinitionItem[] {
-    return [
-      {
-        name: this.pomodoro.t("open"),
-        desc: this.pomodoro.t("settingsDescription"),
-        action: () => this.pomodoro.open(),
-      },
-    ];
-  }
-
   display() {
     this.containerEl.empty();
     new Setting(this.containerEl)
-      .setName(this.pomodoro.t("open"))
-      .setDesc(this.pomodoro.t("settingsDescription"));
+      .setName(this.pomodoro.t("displayRibbon"))
+      .setDesc(this.pomodoro.t("displayRibbonDescription"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.pomodoro.state.settings.showRibbon)
+          .onChange((value) => this.pomodoro.setDisplaySetting("showRibbon", value)),
+      );
+    new Setting(this.containerEl)
+      .setName(this.pomodoro.t("displayStatusBar"))
+      .setDesc(this.pomodoro.t("displayStatusBarDescription"))
+      .addToggle((toggle) =>
+        toggle
+          .setValue(this.pomodoro.state.settings.showStatusBar)
+          .onChange((value) => this.pomodoro.setDisplaySetting("showStatusBar", value)),
+      );
   }
 }

@@ -161,7 +161,11 @@ var import_obsidian2 = require("obsidian");
 // locales/en-US.json
 var en_US_default = {
   open: "Open Pomodoro",
-  settingsDescription: "Open the timer from the command palette or ribbon icon.",
+  settingsDescription: "Choose where the timer shortcut is displayed. The command palette is always available.",
+  displayRibbon: "Ribbon",
+  displayRibbonDescription: "Show a shortcut in the ribbon.",
+  displayStatusBar: "Status bar",
+  displayStatusBarDescription: "Show the timer and a shortcut in the status bar.",
   saveState: "Could not save timer state: {error}",
   audioUnavailable: "Audio is not available in this environment.",
   audioNotRunning: "Could not enable audio.",
@@ -211,7 +215,11 @@ var en_US_default = {
 // locales/ja-JP.json
 var ja_JP_default = {
   open: "\u30DD\u30E2\u30C9\u30FC\u30ED\u3092\u958B\u304F",
-  settingsDescription: "\u30B3\u30DE\u30F3\u30C9\u30D1\u30EC\u30C3\u30C8\u307E\u305F\u306F\u30EA\u30DC\u30F3\u30A2\u30A4\u30B3\u30F3\u304B\u3089\u30BF\u30A4\u30DE\u30FC\u3092\u958B\u304D\u307E\u3059\u3002",
+  settingsDescription: "\u30BF\u30A4\u30DE\u30FC\u3092\u958B\u304F\u30B7\u30E7\u30FC\u30C8\u30AB\u30C3\u30C8\u306E\u8868\u793A\u5834\u6240\u3092\u9078\u629E\u3057\u307E\u3059\u3002\u30B3\u30DE\u30F3\u30C9\u30D1\u30EC\u30C3\u30C8\u306F\u5E38\u306B\u5229\u7528\u3067\u304D\u307E\u3059\u3002",
+  displayRibbon: "\u30EA\u30DC\u30F3",
+  displayRibbonDescription: "\u30EA\u30DC\u30F3\u306B\u30B7\u30E7\u30FC\u30C8\u30AB\u30C3\u30C8\u3092\u8868\u793A\u3057\u307E\u3059\u3002",
+  displayStatusBar: "\u30B9\u30C6\u30FC\u30BF\u30B9\u30D0\u30FC",
+  displayStatusBarDescription: "\u30B9\u30C6\u30FC\u30BF\u30B9\u30D0\u30FC\u306B\u30BF\u30A4\u30DE\u30FC\u3068\u30B7\u30E7\u30FC\u30C8\u30AB\u30C3\u30C8\u3092\u8868\u793A\u3057\u307E\u3059\u3002",
   saveState: "\u30BF\u30A4\u30DE\u30FC\u72B6\u614B\u3092\u4FDD\u5B58\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F: {error}",
   audioUnavailable: "\u3053\u306E\u74B0\u5883\u3067\u306F\u97F3\u58F0\u3092\u5229\u7528\u3067\u304D\u307E\u305B\u3093\u3002",
   audioNotRunning: "\u97F3\u58F0\u3092\u6709\u52B9\u5316\u3067\u304D\u307E\u305B\u3093\u3002",
@@ -278,7 +286,9 @@ var DEFAULTS = {
     focusMinutes: 25,
     breakMinutes: 5,
     volume: 0.6,
-    logFolder: "Pomodoro"
+    logFolder: "Pomodoro",
+    showRibbon: true,
+    showStatusBar: false
   }
 };
 var pad2 = (value) => String(value).padStart(2, "0");
@@ -322,7 +332,9 @@ var normalizePomodoroState = (saved) => {
       focusMinutes: typeof settings.focusMinutes === "number" ? settings.focusMinutes : DEFAULTS.settings.focusMinutes,
       breakMinutes: typeof settings.breakMinutes === "number" ? settings.breakMinutes : DEFAULTS.settings.breakMinutes,
       volume: typeof settings.volume === "number" ? settings.volume : DEFAULTS.settings.volume,
-      logFolder: typeof settings.logFolder === "string" ? normalizeLogFolder(settings.logFolder) ?? DEFAULTS.settings.logFolder : DEFAULTS.settings.logFolder
+      logFolder: typeof settings.logFolder === "string" ? normalizeLogFolder(settings.logFolder) ?? DEFAULTS.settings.logFolder : DEFAULTS.settings.logFolder,
+      showRibbon: typeof settings.showRibbon === "boolean" ? settings.showRibbon : settings.displayLocation === void 0 ? DEFAULTS.settings.showRibbon : settings.displayLocation === "ribbon" || settings.displayLocation === "both",
+      showStatusBar: typeof settings.showStatusBar === "boolean" ? settings.showStatusBar : settings.displayLocation === void 0 ? DEFAULTS.settings.showStatusBar : settings.displayLocation === "statusBar" || settings.displayLocation === "both"
     },
     task: typeof data.task === "string" ? data.task : "",
     lastTask: typeof data.lastTask === "string" ? data.lastTask : "",
@@ -480,6 +492,8 @@ var Pomodoro = class extends import_obsidian3.Plugin {
     this.audio = null;
     this.locale = detectLocale();
     this.messages = {};
+    this.ribbon = null;
+    this.statusBar = null;
   }
   t(key, values = {}) {
     let message = this.messages[key] || key;
@@ -493,6 +507,7 @@ var Pomodoro = class extends import_obsidian3.Plugin {
     this.messages = loadMessages(this.locale);
     this.state = normalizePomodoroState(await this.loadData());
     this.registerOpenActions();
+    this.updateDisplayLocation();
     this.startTicker();
     this.tick();
     void this.flush();
@@ -503,8 +518,35 @@ var Pomodoro = class extends import_obsidian3.Plugin {
       name: this.t("open"),
       callback: () => this.open()
     });
-    this.addRibbonIcon("clock", this.t("open"), () => this.open());
     this.addSettingTab(new PomodoroSettings(this.app, this));
+  }
+  updateDisplayLocation() {
+    this.ribbon?.remove();
+    this.statusBar?.remove();
+    this.ribbon = null;
+    this.statusBar = null;
+    if (this.state.settings.showRibbon) {
+      this.ribbon = this.addRibbonIcon("clock", this.t("open"), () => this.open());
+      this.ribbon.setAttribute("aria-label", this.t("open"));
+    }
+    if (this.state.settings.showStatusBar) {
+      this.statusBar = this.addStatusBarItem();
+      this.statusBar.addClass("mod-clickable");
+      this.statusBar.setAttribute("aria-label", this.t("open"));
+      this.statusBar.addEventListener("click", () => this.open());
+      this.updateStatusBar();
+    }
+  }
+  updateStatusBar() {
+    if (!this.statusBar) return;
+    const session = this.state.session;
+    let value = "--:--";
+    if (session?.type === "work") {
+      value = session.phase === "focus" ? clock(session.plannedEndsAt - Date.now()) : `+${clock(Date.now() - session.plannedEndsAt)}`;
+    } else if (session?.type === "break") {
+      value = session.mode === "manual" ? `+${clock(Date.now() - session.startedAt)}` : session.phase === "break" ? clock((session.endsAt ?? Date.now()) - Date.now()) : `+${clock(Date.now() - (session.endsAt ?? Date.now()))}`;
+    }
+    this.statusBar.textContent = `\u{1F345} ${value}`;
   }
   startTicker() {
     this.registerInterval(window.setInterval(() => this.tick(), 1e3));
@@ -681,6 +723,7 @@ ${log.markdown}`
       this.startAlarm();
     }
     this.render();
+    this.updateStatusBar();
   }
   updateSetting(key, value) {
     if (key === "logFolder") {
@@ -696,6 +739,11 @@ ${log.markdown}`
     void this.persist();
     return this.state.settings[key];
   }
+  setDisplaySetting(key, value) {
+    this.state.settings[key] = value;
+    void this.persist();
+    this.updateDisplayLocation();
+  }
   open() {
     if (this.panel?.root?.isConnected) return;
     this.panel = createPomodoroPanel(this.app.workspace.containerEl.ownerDocument, {
@@ -706,7 +754,10 @@ ${log.markdown}`
         this.state.task = task;
         void this.persist();
       },
-      onSettingChange: (key, value) => this.updateSetting(key, value),
+      onSettingChange: (key, value) => this.updateSetting(
+        key,
+        value
+      ),
       onStart: () => {
         void this.startWork();
       },
@@ -777,17 +828,13 @@ var PomodoroSettings = class extends import_obsidian3.PluginSettingTab {
     super(app, pomodoro);
     this.pomodoro = pomodoro;
   }
-  getSettingDefinitions() {
-    return [
-      {
-        name: this.pomodoro.t("open"),
-        desc: this.pomodoro.t("settingsDescription"),
-        action: () => this.pomodoro.open()
-      }
-    ];
-  }
   display() {
     this.containerEl.empty();
-    new import_obsidian3.Setting(this.containerEl).setName(this.pomodoro.t("open")).setDesc(this.pomodoro.t("settingsDescription"));
+    new import_obsidian3.Setting(this.containerEl).setName(this.pomodoro.t("displayRibbon")).setDesc(this.pomodoro.t("displayRibbonDescription")).addToggle(
+      (toggle) => toggle.setValue(this.pomodoro.state.settings.showRibbon).onChange((value) => this.pomodoro.setDisplaySetting("showRibbon", value))
+    );
+    new import_obsidian3.Setting(this.containerEl).setName(this.pomodoro.t("displayStatusBar")).setDesc(this.pomodoro.t("displayStatusBarDescription")).addToggle(
+      (toggle) => toggle.setValue(this.pomodoro.state.settings.showStatusBar).onChange((value) => this.pomodoro.setDisplaySetting("showStatusBar", value))
+    );
   }
 };

@@ -1,6 +1,10 @@
 {
   "open": "ポモドーロを開く",
-  "settingsDescription": "コマンドパレットまたはリボンアイコンからタイマーを開きます。",
+  "settingsDescription": "タイマーを開くショートカットの表示場所を選択します。コマンドパレットは常に利用できます。",
+  "displayRibbon": "リボン",
+  "displayRibbonDescription": "リボンにショートカットを表示します。",
+  "displayStatusBar": "ステータスバー",
+  "displayStatusBarDescription": "ステータスバーにタイマーとショートカットを表示します。",
   "saveState": "タイマー状態を保存できませんでした: {error}",
   "audioUnavailable": "この環境では音声を利用できません。",
   "audioNotRunning": "音声を有効化できません。",

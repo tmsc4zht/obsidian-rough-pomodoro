@@ -3,6 +3,8 @@ export interface PomodoroConfig {
   breakMinutes: number;
   volume: number;
   logFolder: string;
+  showRibbon: boolean;
+  showStatusBar: boolean;
 }
 
 export interface WorkSession {
@@ -53,6 +55,8 @@ const DEFAULTS = {
     breakMinutes: 5,
     volume: 0.6,
     logFolder: "Pomodoro",
+    showRibbon: true,
+    showStatusBar: false,
   },
 };
 
@@ -151,6 +155,18 @@ export const normalizePomodoroState = (saved: unknown): PomodoroState => {
         typeof settings.logFolder === "string"
           ? (normalizeLogFolder(settings.logFolder) ?? DEFAULTS.settings.logFolder)
           : DEFAULTS.settings.logFolder,
+      showRibbon:
+        typeof settings.showRibbon === "boolean"
+          ? settings.showRibbon
+          : settings.displayLocation === undefined
+            ? DEFAULTS.settings.showRibbon
+            : settings.displayLocation === "ribbon" || settings.displayLocation === "both",
+      showStatusBar:
+        typeof settings.showStatusBar === "boolean"
+          ? settings.showStatusBar
+          : settings.displayLocation === undefined
+            ? DEFAULTS.settings.showStatusBar
+            : settings.displayLocation === "statusBar" || settings.displayLocation === "both",
     },
     task: typeof data.task === "string" ? data.task : "",
     lastTask: typeof data.lastTask === "string" ? data.lastTask : "",

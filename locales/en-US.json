@@ -1,6 +1,10 @@
 {
   "open": "Open Pomodoro",
-  "settingsDescription": "Open the timer from the command palette or ribbon icon.",
+  "settingsDescription": "Choose where the timer shortcut is displayed. The command palette is always available.",
+  "displayRibbon": "Ribbon",
+  "displayRibbonDescription": "Show a shortcut in the ribbon.",
+  "displayStatusBar": "Status bar",
+  "displayStatusBarDescription": "Show the timer and a shortcut in the status bar.",
   "saveState": "Could not save timer state: {error}",
   "audioUnavailable": "Audio is not available in this environment.",
   "audioNotRunning": "Could not enable audio.",
