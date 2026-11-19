@@ -37,6 +37,19 @@ npm run dev:web
 npm run deploy:web
 ```
 
+### 自動デプロイ
+
+Cloudflare Workers Buildsを使うと、GitHubへのpushをきっかけにWeb版を自動デプロイできます。Cloudflareダッシュボードで`rough-pomodoro-web` Workerを開き、**Settings > Builds**からこのGitHubリポジトリを接続してください。
+
+ビルド設定は次のとおりです。
+
+- Production branch: `main`
+- Build command: `npm run build:web`
+- Deploy command: `npx wrangler deploy`
+- Root directory: `/`（リポジトリルート）
+
+Worker名は[wrangler.jsonc](./wrangler.jsonc)の`rough-pomodoro-web`と一致させてください。Workers Buildsがデプロイ認証を管理するため、GitHub ActionsのSecretsは不要です。
+
 ## 開発
 
 Obsidianプラグインのエントリーポイントは[main.ts](./main.ts)、Web版は[web/main.ts](./web/main.ts)です。Pomodoroの状態遷移とログ生成は[pomodoro.ts](./pomodoro.ts)で共有します。依存関係をインストールして、次のコマンドを実行します。
