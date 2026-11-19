@@ -80,6 +80,9 @@
   padding: 16px;
   background: rgba(0, 0, 0, 0.52);
 }
+.rough-pomodoro-dialog[hidden] {
+  display: none;
+}
 .rough-pomodoro-dialog > div {
   display: flex;
   flex-direction: column;
