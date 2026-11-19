@@ -1,0 +1,11 @@
+{
+  "id": "rough-pomodoro",
+  "name": "Rough Pomodoro",
+  "version": "0.1.0",
+  "minAppVersion": "1.4.0",
+  "description": "A lightweight Pomodoro timer with Dataview-friendly daily logs.",
+  "author": "tmsc4zht",
+  "isDesktopOnly": false,
+  "main": "main.js",
+  "styles": "styles.css"
+}

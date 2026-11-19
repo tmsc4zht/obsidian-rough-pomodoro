@@ -1,0 +1,90 @@
+.rough-pomodoro-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.45);
+}
+.rough-pomodoro-card {
+  width: min(480px, 100%);
+  max-height: 90vh;
+  overflow: auto;
+  padding: 18px;
+  border-radius: 24px;
+  background: var(--background-primary);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+}
+.rough-pomodoro-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.rough-pomodoro-card label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 0.9em;
+}
+.rough-pomodoro-card input,
+.rough-pomodoro-card textarea {
+  box-sizing: border-box;
+  padding: 7px;
+  background: var(--background-primary);
+  color: var(--text-normal);
+  border: 1px solid var(--background-modifier-border);
+  border-radius: 5px;
+}
+.rough-pomodoro-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+.rough-pomodoro-hero {
+  margin-top: 12px;
+  padding: 28px 16px;
+  text-align: center;
+  border-radius: 20px;
+  background: linear-gradient(135deg, hsl(39 82% 92%), hsl(207 72% 85%));
+}
+.rough-pomodoro-clock {
+  margin: 14px auto;
+  font-size: 3em;
+  font-variant-numeric: tabular-nums;
+}
+.rough-pomodoro-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 15px;
+}
+.rough-pomodoro-actions button {
+  padding: 8px 11px;
+}
+.rough-pomodoro-error {
+  min-height: 1.4em;
+  margin-top: 10px;
+  color: var(--text-error);
+}
+.rough-pomodoro-dialog {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.52);
+}
+.rough-pomodoro-dialog > div {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: min(360px, 100%);
+  padding: 18px;
+  background: var(--background-primary);
+}
