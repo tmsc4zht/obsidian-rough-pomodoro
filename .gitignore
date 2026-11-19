@@ -1,1 +1,5 @@
 node_modules/
+.wrangler/
+web/dist/
+playwright-report/
+test-results/

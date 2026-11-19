@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#f5f2eb" />
+    <title>Rough Pomodoro</title>
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app">
+      <header class="app-header">
+        <div>
+          <h1 data-i18n="webTitle">Rough Pomodoro</h1>
+        </div>
+        <label class="language-picker">
+          <span data-i18n="language">Language</span>
+          <select id="language">
+            <option value="ja-JP">日本語</option>
+            <option value="en-US">English</option>
+          </select>
+        </label>
+      </header>
+
+      <section
+        class="card timer-card"
+        aria-label="Rough Pomodoro"
+        data-i18n-aria-label="webTitle"
+      >
+        <label class="task-field" for="task">
+          <span data-i18n="task">Task</span>
+          <input id="task" type="text" autocomplete="off" />
+        </label>
+
+        <div class="timer-hero">
+          <p id="label" class="current-task"></p>
+          <p id="state" class="timer-state"></p>
+          <p
+            id="timer"
+            class="clock"
+            aria-label="Timer"
+            data-i18n-aria-label="timerLabel"
+          >
+            --:--
+          </p>
+          <p id="end" class="end-time"></p>
+        </div>
+
+        <div class="actions">
+          <button
+            id="start"
+            class="button button-primary"
+            type="button"
+            data-i18n="start"
+          >
+            ▶️ Start
+          </button>
+          <button id="finish" class="button" type="button" data-i18n="finish">
+            ⏹️ End
+          </button>
+          <button
+            id="manual-break"
+            class="button"
+            type="button"
+            data-i18n="manualBreak"
+          >
+            🌿 Start break
+          </button>
+        </div>
+
+        <details class="settings">
+          <summary data-i18n="webTimerSettings">Timer settings</summary>
+          <div class="settings-grid">
+            <label>
+              <span data-i18n="focusMinutes">Focus time (minutes)</span>
+              <input id="focus-minutes" type="number" min="1" max="180" step="1" />
+            </label>
+            <label>
+              <span data-i18n="breakMinutes">Break time (minutes)</span>
+              <input id="break-minutes" type="number" min="1" max="180" step="1" />
+            </label>
+            <label class="alarm-setting">
+              <span data-i18n="alarmMode">Alarm</span>
+              <select id="alarm-mode">
+                <option value="sound" data-i18n="soundAlarm">Sound</option>
+                <option value="vibration" data-i18n="vibrationAlarm">Vibration</option>
+              </select>
+            </label>
+            <label id="volume-setting" class="volume-setting">
+              <span data-i18n="volume">Volume</span>
+              <input id="volume" type="range" min="0" max="1" step="0.1" />
+            </label>
+          </div>
+          <p class="muted" data-i18n="alarmModeNotice">
+            The browser cannot detect system silent mode. Vibration works only where
+            supported.
+          </p>
+          <label class="setting-toggle">
+            <input id="notifications-enabled" type="checkbox" />
+            <span data-i18n="notificationsEnabled">Notify when a timer ends</span>
+          </label>
+          <p id="notifications-note" class="muted"></p>
+          <button id="preview" class="button" type="button" data-i18n="previewAlarm">
+            🔔 Preview alarm
+          </button>
+        </details>
+
+        <p id="error" class="message error-message" role="alert" hidden></p>
+        <div class="message storage-message" role="status">
+          <p data-i18n="localStorageNotice">
+            Data is stored in this browser and is not sent to Cloudflare. It does not
+            sync across devices.
+          </p>
+          <p id="storage-error" hidden></p>
+          <button
+            id="reset-storage"
+            class="button"
+            type="button"
+            data-i18n="resetData"
+            hidden
+          >
+            Reset saved data
+          </button>
+        </div>
+      </section>
+
+      <section class="card history-card">
+        <div class="history-header">
+          <h2 data-i18n="historyTitle">Work logs</h2>
+          <button
+            id="clear-logs"
+            class="button"
+            type="button"
+            data-i18n="clearLogs"
+            disabled
+          >
+            Clear logs
+          </button>
+        </div>
+        <p class="muted" data-i18n="exportNotice">
+          Download daily Markdown logs and move them into your Obsidian Pomodoro folder.
+        </p>
+        <p id="history-empty" class="muted" data-i18n="historyEmpty">No logs yet.</p>
+        <ul id="history-list" class="history-list"></ul>
+      </section>
+    </main>
+
+    <dialog id="end-dialog" class="dialog">
+      <h2 data-i18n="endTitle">Session result</h2>
+      <div class="dialog-actions">
+        <button
+          id="complete-work"
+          class="button button-primary"
+          type="button"
+          data-i18n="completed"
+        >
+          ✅ Completed
+        </button>
+        <button
+          id="interrupt-work"
+          class="button"
+          type="button"
+          data-i18n="interrupted"
+        >
+          ↗️ Interrupted
+        </button>
+      </div>
+      <textarea
+        id="end-note"
+        data-i18n-placeholder="interruptPlaceholder"
+        hidden
+      ></textarea>
+      <p id="end-error" class="message error-message" role="alert"></p>
+      <div class="dialog-actions">
+        <button
+          id="save-end"
+          class="button button-primary"
+          type="button"
+          data-i18n="recordAndEnd"
+          hidden
+        >
+          Log and end
+        </button>
+        <button id="cancel-end" class="button" type="button" data-i18n="cancel">
+          Cancel
+        </button>
+      </div>
+    </dialog>
+
+    <dialog id="reset-dialog" class="dialog">
+      <h2 data-i18n="resetConfirm">
+        Delete the saved data that could not be loaded and start fresh?
+      </h2>
+      <div class="dialog-actions">
+        <button
+          id="confirm-reset"
+          class="button button-primary"
+          type="button"
+          data-i18n="resetData"
+        >
+          Reset saved data
+        </button>
+        <button id="cancel-reset" class="button" type="button" data-i18n="cancel">
+          Cancel
+        </button>
+      </div>
+    </dialog>
+
+    <dialog id="clear-logs-dialog" class="dialog">
+      <h2 data-i18n="clearLogsTitle">Clear all work logs?</h2>
+      <p class="muted" data-i18n="clearLogsDescription">
+        This deletes work logs saved in this browser only. It does not delete logs in
+        your Obsidian vault. This action cannot be undone.
+      </p>
+      <div class="dialog-actions">
+        <button
+          id="confirm-clear-logs"
+          class="button button-primary"
+          type="button"
+          data-i18n="clearLogs"
+        >
+          Clear logs
+        </button>
+        <button id="cancel-clear-logs" class="button" type="button" data-i18n="cancel">
+          Cancel
+        </button>
+      </div>
+    </dialog>
+
+    <script type="module" src="./app.js"></script>
+  </body>
+</html>

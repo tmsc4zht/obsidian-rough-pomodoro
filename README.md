@@ -22,9 +22,18 @@ The log fields and file names are specific to this plugin. They are not intended
 
 The interface automatically switches between Japanese and English based on Obsidian's language setting.
 
+## Web version
+
+An installable, offline-capable PWA. Data stays in the browser; notifications require permission and the app to remain open.
+
+```bash
+npm run dev:web
+npm run deploy:web
+```
+
 ## Development
 
-The source is [main.ts](./main.ts). Install dependencies and run the following commands:
+The Obsidian plugin entry point is [main.ts](./main.ts), and the web app entry point is [web/main.ts](./web/main.ts). Pomodoro state transitions and log generation are shared through [pomodoro.ts](./pomodoro.ts). Install dependencies and run the following commands:
 
 ```bash
 npm ci

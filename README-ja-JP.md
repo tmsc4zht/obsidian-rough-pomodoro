@@ -22,9 +22,18 @@ SORT item.Start DESC
 
 画面表示はObsidianの言語設定に合わせて、日本語と英語を自動で切り替えます。
 
+## Web版
+
+インストールしてオフラインでも使えるPWAです。データはブラウザー内に保存され、通知には許可とアプリの起動が必要です。
+
+```bash
+npm run dev:web
+npm run deploy:web
+```
+
 ## 開発
 
-ソースは[main.ts](./main.ts)です。依存関係をインストールして、次のコマンドを実行します。
+Obsidianプラグインのエントリーポイントは[main.ts](./main.ts)、Web版は[web/main.ts](./web/main.ts)です。Pomodoroの状態遷移とログ生成は[pomodoro.ts](./pomodoro.ts)で共有します。依存関係をインストールして、次のコマンドを実行します。
 
 ```bash
 npm ci

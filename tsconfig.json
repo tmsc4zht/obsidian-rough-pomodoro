@@ -9,5 +9,5 @@
     "allowJs": false,
     "noEmit": true
   },
-  "include": ["main.ts"]
+  "include": ["main.ts", "web/main.ts", "playwright.config.ts", "tests/**/*.ts"]
 }
