@@ -1,24 +1,20 @@
-import { DataAdapter, normalizePath } from "obsidian";
+import { getLanguage, moment, requireApiVersion } from "obsidian";
+import enMessages from "./locales/en-US.json";
+import jaMessages from "./locales/ja-JP.json";
 
 export type Locale = "ja-JP" | "en-US";
 export type Messages = Record<string, string>;
 
-export const detectLocale = (): Locale =>
-  (navigator.language || "en-US").toLowerCase().startsWith("ja") ? "ja-JP" : "en-US";
+const messages: Record<Locale, Messages> = {
+  "ja-JP": jaMessages,
+  "en-US": enMessages,
+};
 
-export async function loadMessages(
-  adapter: DataAdapter,
-  pluginDir: string,
-  locale: Locale,
-): Promise<Messages> {
-  const read = async (name: Locale) =>
-    JSON.parse(
-      await adapter.read(normalizePath(`${pluginDir}/locales/${name}.json`)),
-    ) as Messages;
+export const detectLocale = (): Locale => {
+  const language = requireApiVersion("1.8.7") ? getLanguage() : moment.locale();
+  return language.toLowerCase().startsWith("ja") ? "ja-JP" : "en-US";
+};
 
-  try {
-    return await read(locale);
-  } catch {
-    return locale === "en-US" ? {} : read("en-US");
-  }
+export function loadMessages(locale: Locale): Messages {
+  return messages[locale];
 }
