@@ -49,12 +49,23 @@
   padding: 28px 16px;
   text-align: center;
   border-radius: 20px;
-  background: linear-gradient(135deg, hsl(39 82% 92%), hsl(207 72% 85%));
+  color: var(--text-normal);
+  background: var(--background-secondary);
+  border: 1px solid var(--background-modifier-border);
+}
+.rough-pomodoro-hero > div:first-child,
+.rough-pomodoro-hero > div:last-child {
+  color: var(--text-muted);
+}
+.rough-pomodoro-hero > div:nth-child(2) {
+  color: var(--text-normal);
+  font-weight: 600;
 }
 .rough-pomodoro-clock {
   margin: 14px auto;
   font-size: 3em;
   font-variant-numeric: tabular-nums;
+  color: var(--text-normal);
 }
 .rough-pomodoro-actions {
   display: flex;
