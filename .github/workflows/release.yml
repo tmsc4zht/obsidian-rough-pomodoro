@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - "*"
+      - "[0-9]*"
 
 permissions:
   contents: write
@@ -38,31 +38,70 @@ jobs:
       - name: Build
         run: npm run build
 
-      - name: Verify tag matches manifest version
+      - name: Prepare release assets
+        id: release_assets
         env:
           TAG: ${{ github.ref_name }}
         run: |
-          node --input-type=module -e '
-            import fs from "node:fs";
-            const manifest = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
-            if (manifest.version !== process.env.TAG) {
-              throw new Error(`Tag ${process.env.TAG} does not match manifest version ${manifest.version}`);
-            }
-          '
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+
+          const tag = process.env.TAG;
+          const semver =
+            /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(?:\.(?:0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\+([0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))?$/;
+          const match = tag.match(semver);
+          if (!match) {
+            throw new Error(`Tag ${tag} is not a semantic version without a "v" prefix`);
+          }
+
+          const manifest = JSON.parse(fs.readFileSync("manifest.json", "utf8"));
+          if (!match[4] && manifest.version !== tag) {
+            throw new Error(
+              `Stable release tag ${tag} must match manifest.json version ${manifest.version}`,
+            );
+          }
+          if (!fs.existsSync("main.js")) {
+            throw new Error("Build did not produce main.js");
+          }
+
+          fs.mkdirSync("release-assets", { recursive: true });
+          fs.writeFileSync(
+            "release-assets/manifest.json",
+            `${JSON.stringify({ ...manifest, version: tag }, null, 2)}\n`,
+          );
+
+          const assets = ["main.js", "release-assets/manifest.json"];
+          if (fs.existsSync("styles.css")) assets.push("styles.css");
+
+          const output = [
+            `is_prerelease=${Boolean(match[4])}`,
+            "attestation_paths<<ASSETS",
+            ...assets,
+            "ASSETS",
+            "",
+          ].join("\n");
+          fs.appendFileSync(process.env.GITHUB_OUTPUT, output);
+          NODE
 
       - name: Generate artifact attestation
         uses: actions/attest@v4
         with:
-          subject-path: |
-            main.js
-            manifest.json
-            styles.css
+          subject-path: ${{ steps.release_assets.outputs.attestation_paths }}
 
-      - name: Create draft GitHub Release
+      - name: Publish GitHub Release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          IS_PRERELEASE: ${{ steps.release_assets.outputs.is_prerelease }}
+          TAG: ${{ github.ref_name }}
         run: |
-          gh release create "${{ github.ref_name }}" \
-            --draft \
-            --title "${{ github.ref_name }}" \
-            main.js manifest.json styles.css
+          assets=(main.js release-assets/manifest.json)
+          if [[ -f styles.css ]]; then
+            assets+=(styles.css)
+          fi
+
+          args=(--verify-tag --title "$TAG" --generate-notes)
+          if [[ "$IS_PRERELEASE" == "true" ]]; then
+            args+=(--prerelease)
+          fi
+
+          gh release create "$TAG" "${args[@]}" "${assets[@]}"
