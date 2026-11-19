@@ -3,6 +3,7 @@ export interface PomodoroConfig {
   breakMinutes: number;
   volume: number;
   logFolder: string;
+  fileNameFormat: string;
   showRibbon: boolean;
   showStatusBar: boolean;
 }
@@ -55,6 +56,7 @@ const DEFAULTS = {
     breakMinutes: 5,
     volume: 0.6,
     logFolder: "Pomodoro",
+    fileNameFormat: "YYYY-MM-DD-rough-pomodoro-log",
     showRibbon: true,
     showStatusBar: false,
   },
@@ -71,6 +73,39 @@ const timeOf = (timestamp: number): string => {
 };
 const dateTimeOf = (timestamp: number): string =>
   `${dateOf(timestamp)} ${timeOf(timestamp)}`;
+
+const fileNameTokens: Record<string, (date: Date) => string> = {
+  YYYY: (date) => String(date.getFullYear()),
+  YY: (date) => pad(date.getFullYear() % 100),
+  MM: (date) => pad(date.getMonth() + 1),
+  M: (date) => String(date.getMonth() + 1),
+  DD: (date) => pad(date.getDate()),
+  D: (date) => String(date.getDate()),
+  HH: (date) => pad(date.getHours()),
+  mm: (date) => pad(date.getMinutes()),
+  ss: (date) => pad(date.getSeconds()),
+};
+
+const fileNameTokenPattern = /YYYY|YY|MM|M|DD|D|HH|mm|ss/g;
+
+export const formatLogFileName = (timestamp: number, format: string): string => {
+  const date = new Date(timestamp);
+  return format.replace(fileNameTokenPattern, (token) => fileNameTokens[token](date));
+};
+
+export const normalizeFileNameFormat = (format: string): string | null => {
+  const trimmed = format.trim();
+  if (
+    !trimmed ||
+    trimmed.includes("/") ||
+    trimmed.includes("\\") ||
+    /[\u0000-\u001f]/.test(trimmed) ||
+    formatLogFileName(Date.now(), trimmed).trim() === ""
+  ) {
+    return null;
+  }
+  return trimmed;
+};
 const clean = (value: string): string =>
   value
     .replace(/\r?\n/g, " / ")
@@ -155,6 +190,11 @@ export const normalizePomodoroState = (saved: unknown): PomodoroState => {
         typeof settings.logFolder === "string"
           ? (normalizeLogFolder(settings.logFolder) ?? DEFAULTS.settings.logFolder)
           : DEFAULTS.settings.logFolder,
+      fileNameFormat:
+        typeof settings.fileNameFormat === "string"
+          ? (normalizeFileNameFormat(settings.fileNameFormat) ??
+            DEFAULTS.settings.fileNameFormat)
+          : DEFAULTS.settings.fileNameFormat,
       showRibbon:
         typeof settings.showRibbon === "boolean"
           ? settings.showRibbon
@@ -194,7 +234,10 @@ const createLog = (
   const marker = `[Session:: ${sessionId}]`;
   return {
     id: sessionId,
-    path: [state.settings.logFolder, `${dateOf(timestamp)}.md`]
+    path: [
+      state.settings.logFolder,
+      `${formatLogFileName(timestamp, state.settings.fileNameFormat)}.md`,
+    ]
       .filter(Boolean)
       .join("/"),
     marker,

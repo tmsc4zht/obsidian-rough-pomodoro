@@ -181,6 +181,9 @@ var en_US_default = {
   volume: "Volume",
   logFolder: "Log folder",
   logFolderDescription: "Folder inside the vault where daily work logs are saved.",
+  fileNameFormat: "File name format",
+  fileNameFormatDescription: "Format for log dates, such as YYYY-MM-DD or YYYY-MM-DD-HH-mm. Tokens: YYYY YY MM M DD D HH mm ss. The .md extension is added automatically.",
+  invalidFileNameFormat: "The file name format is invalid. It cannot be empty or contain folder separators.",
   start: "\u25B6\uFE0F Start",
   finish: "\u23F9\uFE0F End",
   manualBreak: "\u{1F33F} Start break",
@@ -237,6 +240,9 @@ var ja_JP_default = {
   volume: "\u97F3\u91CF",
   logFolder: "\u30ED\u30B0\u4FDD\u5B58\u5148\u30D5\u30A9\u30EB\u30C0",
   logFolderDescription: "\u65E5\u3005\u306E\u4F5C\u696D\u30ED\u30B0\u3092\u4FDD\u5B58\u3059\u308BVault\u5185\u306E\u30D5\u30A9\u30EB\u30C0\u3067\u3059\u3002",
+  fileNameFormat: "\u30D5\u30A1\u30A4\u30EB\u540D\u306E\u5F62\u5F0F",
+  fileNameFormatDescription: "\u65E5\u4ED8\u306E\u5F62\u5F0F\u3092\u6307\u5B9A\u3057\u307E\u3059\u3002\u4F8B: YYYY-MM-DD\u3001YYYY\u5E74MM\u6708DD\u65E5\u3002\u4F7F\u7528\u3067\u304D\u308B\u8A18\u53F7: YYYY YY MM M DD D HH mm ss\u3002\u62E1\u5F35\u5B50.md\u306F\u81EA\u52D5\u3067\u4ED8\u304D\u307E\u3059\u3002",
+  invalidFileNameFormat: "\u30D5\u30A1\u30A4\u30EB\u540D\u306E\u5F62\u5F0F\u304C\u4E0D\u6B63\u3067\u3059\u3002\u7A7A\u6B04\u3084\u30D5\u30A9\u30EB\u30C0\u533A\u5207\u308A\u6587\u5B57\u306F\u4F7F\u7528\u3067\u304D\u307E\u305B\u3093\u3002",
   start: "\u25B6\uFE0F \u958B\u59CB",
   finish: "\u23F9\uFE0F \u7D42\u4E86",
   manualBreak: "\u{1F33F} \u4F11\u61A9\u958B\u59CB",
@@ -288,6 +294,7 @@ var DEFAULTS = {
     breakMinutes: 5,
     volume: 0.6,
     logFolder: "Pomodoro",
+    fileNameFormat: "YYYY-MM-DD-rough-pomodoro-log",
     showRibbon: true,
     showStatusBar: false
   }
@@ -302,6 +309,29 @@ var timeOf2 = (timestamp) => {
   return `${pad2(date.getHours())}:${pad2(date.getMinutes())}:${pad2(date.getSeconds())}`;
 };
 var dateTimeOf = (timestamp) => `${dateOf(timestamp)} ${timeOf2(timestamp)}`;
+var fileNameTokens = {
+  YYYY: (date) => String(date.getFullYear()),
+  YY: (date) => pad2(date.getFullYear() % 100),
+  MM: (date) => pad2(date.getMonth() + 1),
+  M: (date) => String(date.getMonth() + 1),
+  DD: (date) => pad2(date.getDate()),
+  D: (date) => String(date.getDate()),
+  HH: (date) => pad2(date.getHours()),
+  mm: (date) => pad2(date.getMinutes()),
+  ss: (date) => pad2(date.getSeconds())
+};
+var fileNameTokenPattern = /YYYY|YY|MM|M|DD|D|HH|mm|ss/g;
+var formatLogFileName = (timestamp, format) => {
+  const date = new Date(timestamp);
+  return format.replace(fileNameTokenPattern, (token) => fileNameTokens[token](date));
+};
+var normalizeFileNameFormat = (format) => {
+  const trimmed = format.trim();
+  if (!trimmed || trimmed.includes("/") || trimmed.includes("\\") || /[\u0000-\u001f]/.test(trimmed) || formatLogFileName(Date.now(), trimmed).trim() === "") {
+    return null;
+  }
+  return trimmed;
+};
 var clean = (value) => value.replace(/\r?\n/g, " / ").replace(/::/g, ":").replace(/\[/g, "(").replace(/\]/g, ")");
 var isRecord = (value) => typeof value === "object" && value !== null && !Array.isArray(value);
 var isPomodoroSession = (value) => {
@@ -334,6 +364,7 @@ var normalizePomodoroState = (saved) => {
       breakMinutes: typeof settings.breakMinutes === "number" ? settings.breakMinutes : DEFAULTS.settings.breakMinutes,
       volume: typeof settings.volume === "number" ? settings.volume : DEFAULTS.settings.volume,
       logFolder: typeof settings.logFolder === "string" ? normalizeLogFolder(settings.logFolder) ?? DEFAULTS.settings.logFolder : DEFAULTS.settings.logFolder,
+      fileNameFormat: typeof settings.fileNameFormat === "string" ? normalizeFileNameFormat(settings.fileNameFormat) ?? DEFAULTS.settings.fileNameFormat : DEFAULTS.settings.fileNameFormat,
       showRibbon: typeof settings.showRibbon === "boolean" ? settings.showRibbon : settings.displayLocation === void 0 ? DEFAULTS.settings.showRibbon : settings.displayLocation === "ribbon" || settings.displayLocation === "both",
       showStatusBar: typeof settings.showStatusBar === "boolean" ? settings.showStatusBar : settings.displayLocation === void 0 ? DEFAULTS.settings.showStatusBar : settings.displayLocation === "statusBar" || settings.displayLocation === "both"
     },
@@ -348,7 +379,10 @@ var createLog = (state, sessionId, timestamp, row) => {
   const marker = `[Session:: ${sessionId}]`;
   return {
     id: sessionId,
-    path: [state.settings.logFolder, `${dateOf(timestamp)}.md`].filter(Boolean).join("/"),
+    path: [
+      state.settings.logFolder,
+      `${formatLogFileName(timestamp, state.settings.fileNameFormat)}.md`
+    ].filter(Boolean).join("/"),
     marker,
     markdown: `${row}
 `
@@ -734,6 +768,13 @@ ${log.markdown}`
         return null;
       }
       this.state.settings.logFolder = logFolder;
+    } else if (key === "fileNameFormat") {
+      const fileNameFormat = normalizeFileNameFormat(value);
+      if (fileNameFormat === null) {
+        this.notice(this.t("invalidFileNameFormat"));
+        return null;
+      }
+      this.state.settings.fileNameFormat = fileNameFormat;
     } else {
       this.state.settings[key] = Number(value);
     }
@@ -841,6 +882,12 @@ var PomodoroSettings = class extends import_obsidian3.PluginSettingTab {
       (text) => text.setValue(this.pomodoro.state.settings.logFolder).onChange((value) => {
         const saved = this.pomodoro.updateSetting("logFolder", value);
         text.setValue(String(saved ?? this.pomodoro.state.settings.logFolder));
+      })
+    );
+    new import_obsidian3.Setting(this.containerEl).setName(this.pomodoro.t("fileNameFormat")).setDesc(this.pomodoro.t("fileNameFormatDescription")).addText(
+      (text) => text.setValue(this.pomodoro.state.settings.fileNameFormat).onChange((value) => {
+        const saved = this.pomodoro.updateSetting("fileNameFormat", value);
+        text.setValue(String(saved ?? this.pomodoro.state.settings.fileNameFormat));
       })
     );
   }

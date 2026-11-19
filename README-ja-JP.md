@@ -55,6 +55,8 @@ npm run build
 
 ログの既定保存先は、Vault直下の`Pomodoro`フォルダです。タイマー設定から変更できます。保存先はVault内の相対パスに限られ、空欄の場合はVault直下に保存します。`..`は使用できません。
 
+ログファイル名の形式もタイマー設定から変更できます。既定のファイル名は`YYYY-MM-DD-rough-pomodoro-log.md`です。設定値には`YYYY-MM-DD-rough-pomodoro-log`を使用します。`YYYY`（年）、`MM`/`M`（月）、`DD`/`D`（日）、`HH`（時）、`mm`（分）、`ss`（秒）などを使用できます。拡張子`.md`は自動で付きます。
+
 安定版をリリースするときは、`manifest.json`と`versions.json`のバージョンを更新してコミットし、`v`を付けずに同じSemantic Versioningタグをpushします。ベータ版では既定ブランチのmanifestを変更せず、`0.1.0-beta.1`のようなプレリリースタグをpushします。GitHub ActionsがタグからRelease用の`manifest.json`を生成し、タグと一致するバージョンでReleaseを公開します。ベータ版ReleaseはPre-releaseとして作成されます。
 
 英語のドキュメントは[README.md](./README.md)を参照してください。

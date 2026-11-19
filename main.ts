@@ -15,6 +15,7 @@ import {
   completeWorkSession,
   endBreakSession,
   isSafeLogPath,
+  normalizeFileNameFormat,
   normalizeLogFolder,
   normalizePomodoroState,
   startManualBreakSession,
@@ -318,6 +319,13 @@ export default class Pomodoro extends Plugin {
         return null;
       }
       this.state.settings.logFolder = logFolder;
+    } else if (key === "fileNameFormat") {
+      const fileNameFormat = normalizeFileNameFormat(value);
+      if (fileNameFormat === null) {
+        this.notice(this.t("invalidFileNameFormat"));
+        return null;
+      }
+      this.state.settings.fileNameFormat = fileNameFormat;
     } else {
       this.state.settings[key] = Number(value);
     }
@@ -467,6 +475,15 @@ class PomodoroSettings extends PluginSettingTab {
         text.setValue(this.pomodoro.state.settings.logFolder).onChange((value) => {
           const saved = this.pomodoro.updateSetting("logFolder", value);
           text.setValue(String(saved ?? this.pomodoro.state.settings.logFolder));
+        }),
+      );
+    new Setting(this.containerEl)
+      .setName(this.pomodoro.t("fileNameFormat"))
+      .setDesc(this.pomodoro.t("fileNameFormatDescription"))
+      .addText((text) =>
+        text.setValue(this.pomodoro.state.settings.fileNameFormat).onChange((value) => {
+          const saved = this.pomodoro.updateSetting("fileNameFormat", value);
+          text.setValue(String(saved ?? this.pomodoro.state.settings.fileNameFormat));
         }),
       );
   }

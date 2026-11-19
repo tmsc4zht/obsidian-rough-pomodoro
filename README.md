@@ -55,6 +55,8 @@ Open the timer from the command palette using **Open Pomodoro** (or its Japanese
 
 The default log folder is `Pomodoro` at the root of your vault. You can change it in the timer settings. The folder must stay inside the vault; leave it blank to save logs at the vault root. `..` path segments are not allowed.
 
+You can also change the log file name format in the timer settings. The default file name is `YYYY-MM-DD-rough-pomodoro-log.md`; the setting value is `YYYY-MM-DD-rough-pomodoro-log`. Available tokens include `YYYY` (year), `MM`/`M` (month), `DD`/`D` (day), `HH` (hour), `mm` (minute), and `ss` (second). The `.md` extension is added automatically.
+
 For a stable release, update the version in `manifest.json` and `versions.json`, commit the changes, and push a matching semantic-version tag without a `v` prefix. For a beta, push a pre-release tag such as `0.1.0-beta.1` without changing the default-branch manifest. GitHub Actions builds from the tag, creates a release `manifest.json` whose version matches the tag, and publishes the Release; beta tags are marked as pre-releases.
 
 For Japanese documentation, see [README-ja-JP.md](./README-ja-JP.md).
