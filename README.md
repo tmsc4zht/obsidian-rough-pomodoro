@@ -37,19 +37,6 @@ npm run dev:web
 npm run deploy:web
 ```
 
-### Automatic deployment
-
-Use Cloudflare Workers Builds to deploy the web app whenever changes are pushed to GitHub. In the Cloudflare dashboard, open the `rough-pomodoro-web` Worker, go to **Settings > Builds**, and connect this GitHub repository.
-
-Use these build settings:
-
-- Production branch: `main`
-- Build command: `npm run build:web`
-- Deploy command: `npx wrangler deploy`
-- Root directory: `/` (repository root)
-
-The Worker name must remain `rough-pomodoro-web`, matching [wrangler.jsonc](./wrangler.jsonc). Cloudflare Workers Builds manages the deployment authentication, so no GitHub Actions secrets are required.
-
 ## Development
 
 The Obsidian plugin entry point is [main.ts](./main.ts), and the web app entry point is [web/main.ts](./web/main.ts). Pomodoro state transitions and log generation are shared through [pomodoro.ts](./pomodoro.ts). Install dependencies and run the following commands:
