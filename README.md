@@ -27,10 +27,10 @@ The interface automatically switches between Japanese and English based on Obsid
 The source is [main.ts](./main.ts). Install dependencies and run the following commands:
 
 ```bash
-npm install
+npm ci
 npm run format
 npm run lint
-npm run check
+npm run typecheck
 npm run build
 ```
 
@@ -38,6 +38,8 @@ npm run build
 
 Open the timer from the command palette using **Open Pomodoro** (or its Japanese equivalent) or from the ribbon icon.
 
-The default log folder is `Pomodoro` at the root of your vault. You can change it in the timer settings.
+The default log folder is `Pomodoro` at the root of your vault. You can change it in the timer settings. The folder must stay inside the vault; leave it blank to save logs at the vault root. `..` path segments are not allowed.
+
+For a release, update the version in `manifest.json` and `versions.json`, commit the changes, and create a tag with the exact same version (without a `v` prefix). GitHub Actions verifies the tag, builds the plugin, and creates a draft Release with the required Obsidian assets.
 
 For Japanese documentation, see [README-ja-JP.md](./README-ja-JP.md).

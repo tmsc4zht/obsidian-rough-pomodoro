@@ -27,10 +27,10 @@ SORT item.Start DESC
 ソースは[main.ts](./main.ts)です。依存関係をインストールして、次のコマンドを実行します。
 
 ```bash
-npm install
+npm ci
 npm run format
 npm run lint
-npm run check
+npm run typecheck
 npm run build
 ```
 
@@ -38,6 +38,8 @@ npm run build
 
 コマンドパレットの**ポモドーロを開く**（英語環境では**Open Pomodoro**）またはリボンアイコンからタイマーを起動できます。
 
-ログの既定保存先は、Vault直下の`Pomodoro`フォルダです。タイマー設定から変更できます。
+ログの既定保存先は、Vault直下の`Pomodoro`フォルダです。タイマー設定から変更できます。保存先はVault内の相対パスに限られ、空欄の場合はVault直下に保存します。`..`は使用できません。
+
+リリース時は、`manifest.json`と`versions.json`のバージョンを更新し、`v`を付けずに同じバージョンのタグを作成します。GitHub Actionsがタグとmanifestの一致を検証し、ビルド後にObsidianの必要アセットを添付したDraft Releaseを作成します。
 
 英語のドキュメントは[README.md](./README.md)を参照してください。
