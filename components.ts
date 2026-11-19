@@ -142,19 +142,21 @@ const createEndDialog = (
     interrupted = endCard.createEl("button", { text: options.t("interrupted") }),
     reason = endCard.createEl("textarea");
   reason.placeholder = options.t("interruptPlaceholder");
-  const save = endCard.createEl("button", { text: options.t("recordAndEnd") });
+  const endError = endCard.createDiv();
   close.onclick = () => (endDialog.hidden = true);
   done.onclick = () => options.onComplete("completed");
   interrupted.onclick = () => {
-    reason.hidden = false;
-    save.hidden = false;
+    if (reason.hidden) {
+      reason.hidden = false;
+      reason.focus();
+      return;
+    }
+    options.onComplete("interrupted", reason.value);
   };
   reason.hidden = true;
-  save.hidden = true;
-  save.onclick = () => options.onComplete("interrupted", reason.value);
   return {
     endDialog,
-    endError: endCard.createDiv(),
+    endError,
   };
 };
 

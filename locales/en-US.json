@@ -34,7 +34,6 @@
   "completed": "✅ Completed",
   "interrupted": "↗️ Interrupted",
   "interruptPlaceholder": "Interrupt description (required)",
-  "recordAndEnd": "Log and end",
   "cancel": "Cancel",
   "close": "Close",
   "pureBreak": "Taking a break",

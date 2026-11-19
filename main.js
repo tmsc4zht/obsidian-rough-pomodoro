@@ -123,19 +123,21 @@ var createEndDialog = (root, options) => {
   endCard.createEl("b", { text: options.t("endTitle") });
   const done = endCard.createEl("button", { text: options.t("completed") }), interrupted = endCard.createEl("button", { text: options.t("interrupted") }), reason = endCard.createEl("textarea");
   reason.placeholder = options.t("interruptPlaceholder");
-  const save = endCard.createEl("button", { text: options.t("recordAndEnd") });
+  const endError = endCard.createDiv();
   close.onclick = () => endDialog.hidden = true;
   done.onclick = () => options.onComplete("completed");
   interrupted.onclick = () => {
-    reason.hidden = false;
-    save.hidden = false;
+    if (reason.hidden) {
+      reason.hidden = false;
+      reason.focus();
+      return;
+    }
+    options.onComplete("interrupted", reason.value);
   };
   reason.hidden = true;
-  save.hidden = true;
-  save.onclick = () => options.onComplete("interrupted", reason.value);
   return {
     endDialog,
-    endError: endCard.createDiv()
+    endError
   };
 };
 var createPomodoroPanel = (document, options) => {
@@ -192,7 +194,6 @@ var en_US_default = {
   completed: "\u2705 Completed",
   interrupted: "\u2197\uFE0F Interrupted",
   interruptPlaceholder: "Interrupt description (required)",
-  recordAndEnd: "Log and end",
   cancel: "Cancel",
   close: "Close",
   pureBreak: "Taking a break",
@@ -251,7 +252,6 @@ var ja_JP_default = {
   completed: "\u2705 \u5B8C\u4E86",
   interrupted: "\u2197\uFE0F \u4E2D\u65AD",
   interruptPlaceholder: "\u4E2D\u65AD\u7406\u7531\uFF08\u5FC5\u9808\uFF09",
-  recordAndEnd: "\u8A18\u9332\u3057\u3066\u7D42\u4E86",
   cancel: "\u30AD\u30E3\u30F3\u30BB\u30EB",
   close: "\u9589\u3058\u308B",
   pureBreak: "\u7D14\u7C8B\u306A\u4F11\u61A9\u4E2D",
