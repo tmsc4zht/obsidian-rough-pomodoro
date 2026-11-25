@@ -376,6 +376,16 @@ input:disabled {
   margin-top: 14px;
 }
 
+.app-footer {
+  margin: 18px auto 0;
+  text-align: center;
+}
+
+.app-footer a {
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
 @media (max-width: 520px) {
   body {
     padding: 20px 12px;

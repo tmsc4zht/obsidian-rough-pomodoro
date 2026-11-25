@@ -30,7 +30,7 @@ SORT item.Start DESC
 
 ## Web版
 
-インストールしてオフラインでも使えるPWAです。データはブラウザー内に保存され、通知には許可とアプリの起動が必要です。
+[Rough Pomodoro Web版](https://rough-pomodoro-web.tmsc4zht.workers.dev/)から利用できます。インストールしてオフラインでも使えるPWAです。データはブラウザー内に保存され、通知には許可とアプリの起動が必要です。
 
 ```bash
 npm run dev:web

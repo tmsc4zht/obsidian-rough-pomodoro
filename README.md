@@ -30,7 +30,7 @@ The interface automatically switches between Japanese and English based on Obsid
 
 ## Web version
 
-An installable, offline-capable PWA. Data stays in the browser; notifications require permission and the app to remain open.
+Try the [Rough Pomodoro Web version](https://rough-pomodoro-web.tmsc4zht.workers.dev/), an installable, offline-capable PWA. Data stays in the browser; notifications require permission and the app to remain open.
 
 ```bash
 npm run dev:web
