@@ -110,6 +110,14 @@ export default class Pomodoro extends Plugin {
   private updateStatusBar(): void {
     if (!this.statusBar) return;
     const session = this.state.session;
+    const icon =
+      session?.type === "work"
+        ? session.phase === "overtime"
+          ? "⏱️"
+          : "🎯"
+        : session?.type === "break" && session.phase !== "breakDone"
+          ? "☕"
+          : "🌿";
     let value = "--:--";
     if (session?.type === "work") {
       value =
@@ -124,7 +132,7 @@ export default class Pomodoro extends Plugin {
             ? clock((session.endsAt ?? Date.now()) - Date.now())
             : `+${clock(Date.now() - (session.endsAt ?? Date.now()))}`;
     }
-    this.statusBar.textContent = `🍅 ${value}`;
+    this.statusBar.textContent = `${icon} ${value}`;
   }
 
   private startTicker() {

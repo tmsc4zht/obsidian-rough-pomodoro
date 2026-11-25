@@ -575,13 +575,14 @@ var Pomodoro = class extends import_obsidian3.Plugin {
   updateStatusBar() {
     if (!this.statusBar) return;
     const session = this.state.session;
+    const icon = session?.type === "work" ? session.phase === "overtime" ? "\u23F1\uFE0F" : "\u{1F3AF}" : session?.type === "break" && session.phase !== "breakDone" ? "\u2615" : "\u{1F33F}";
     let value = "--:--";
     if (session?.type === "work") {
       value = session.phase === "focus" ? clock(session.plannedEndsAt - Date.now()) : `+${clock(Date.now() - session.plannedEndsAt)}`;
     } else if (session?.type === "break") {
       value = session.mode === "manual" ? `+${clock(Date.now() - session.startedAt)}` : session.phase === "break" ? clock((session.endsAt ?? Date.now()) - Date.now()) : `+${clock(Date.now() - (session.endsAt ?? Date.now()))}`;
     }
-    this.statusBar.textContent = `\u{1F345} ${value}`;
+    this.statusBar.textContent = `${icon} ${value}`;
   }
   startTicker() {
     this.registerInterval(window.setInterval(() => this.tick(), 1e3));
